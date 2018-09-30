@@ -1,14 +1,10 @@
 #!/usr/bin/env bash
 
-# Usage on Semaphore: bash ci/test.sh 10
+# Usage on Semaphore: bash ci/test.sh
 
 set -e
 
-NODE_VERSION=${@: -1}
-
-nvm use "$NODE_VERSION"
-
-echo "Testing with NodeJS $(node --version) / $(npm --version) (from '$NODE_VERSION')"
+echo "Testing with NodeJS $(node --version) / $(npm --version)"
 
 npm install
 npm test
