@@ -7,12 +7,15 @@ This library intends to be compatible with `applicationinsights` `1.0`. If you a
 
 ## Installation
 
-Tested on node-5.10.x, requires npm.
 
 ```sh
   $ npm install winston
   $ npm install winston-azure-application-insights
 ```
+
+## Support
+
+Tested on NodeJS 6+
 
 ## Usage
 
