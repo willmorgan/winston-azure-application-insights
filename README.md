@@ -1,18 +1,26 @@
 winston-azure-application-insights
 ==================================
 
+[![Build Status](https://semaphoreci.com/api/v1/willmorgan/winston-azure-application-insights/branches/develop/shields_badge.svg)](https://semaphoreci.com/willmorgan/winston-azure-application-insights)
+
 An [Azure Application Insights][0] transport for [Winston][1] logging library. Allows to log on App Insights trace with Winston.
 
 This library intends to be compatible with `applicationinsights` `1.0`. If you are using an older version of the AppInsights NodeJS client, see the `1.1.x` releases.
 
 ## Installation
 
-Tested on node-5.10.x, requires npm.
+You'll need the following packages as peer dependencies:
+
+* the `winston` logger package
+* the `applicationinsights` library
 
 ```sh
-  $ npm install winston
   $ npm install winston-azure-application-insights
 ```
+
+## Support
+
+Tested on NodeJS 6+
 
 ## Usage
 
