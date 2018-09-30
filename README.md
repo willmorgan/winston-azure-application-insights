@@ -7,9 +7,12 @@ This library intends to be compatible with `applicationinsights` `1.0`. If you a
 
 ## Installation
 
+You'll need the following packages as peer dependencies:
+
+* the `winston` logger package
+* the `applicationinsights` library
 
 ```sh
-  $ npm install winston
   $ npm install winston-azure-application-insights
 ```
 
