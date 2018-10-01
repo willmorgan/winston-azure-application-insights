@@ -1,13 +1,21 @@
 'use strict';
 
 const winston = require('winston');
+const appInsights = require('applicationinsights');
 const { AzureApplicationInsightsLogger } = require('./lib/winston-azure-application-insights');
 
-winston.add(new AzureApplicationInsightsLogger({
-    // key: '12345',
-}));
+const shouldPushToAppInsights = 'APPINSIGHTS_INSTRUMENTATIONKEY' in process.env;
 
-winston.info("Let's log something new...");
+if (shouldPushToAppInsights) {
+    appInsights.setup().start();
+    winston.add(new AzureApplicationInsightsLogger({
+        client: appInsights.defaultClient,
+    }));
+} else {
+    winston.add(new winston.transports.Console());
+}
+
+winston.info('Let\'s log something new...');
 winston.error('This is an error log!');
 winston.warn('And this is a warning message.');
 winston.log('info', 'Log with some metadata', {

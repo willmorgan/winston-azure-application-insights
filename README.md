@@ -3,24 +3,32 @@ winston-azure-application-insights
 
 [![Build Status](https://semaphoreci.com/api/v1/willmorgan/winston-azure-application-insights/branches/develop/shields_badge.svg)](https://semaphoreci.com/willmorgan/winston-azure-application-insights)
 
-An [Azure Application Insights][0] transport for [Winston][1] logging library. Allows to log on App Insights trace with Winston.
+An [Azure Application Insights][0] transport for [Winston][1] logging library.
 
-This library intends to be compatible with `applicationinsights` `1.0` and Winston `3.x`. If you are using older versions of these libraries, see the `1.1.x` releases.
+This transport is designed to make it easy to obtain a reference to a standard logging library that broadcasts to Application Insights.
+
+Your logging interface can remain familiar to standard (`logger.info`, `logger.error` etc) without intertwining any Azure-specific implementation detail. 
+
+This library intends to be compatible with `applicationinsights` `1.0` and Winston `3.x`. If you are using older versions of these libraries, see the `1.x` releases.
 
 ## Installation
 
-You'll need the following packages as peer dependencies:
+You'll need the following packages as peer dependencies; install and update them in your requiring project:
 
 * the `winston` logger package
 * the `applicationinsights` library
 
 ```sh
-  $ npm install winston-azure-application-insights
+npm install winston-azure-application-insights
 ```
+
+They aren't required for you, in case you want to run a specific version.
 
 ## Support
 
-Tested on NodeJS 8+
+This library uses ES6 which should be compatible with NodeJS 6 through to 10.
+
+Continuous integration tests are run against the NodeJS LTS versions.
 
 ## Usage
 
@@ -42,7 +50,7 @@ const { AzureApplicationInsightsLogger } = require('winston-azure-application-in
 
 // Create an app insights client with the given key
 winston.add(new AzureApplicationInsightsLogger({
-	key: "<YOUR_INSTRUMENTATION_KEY_HERE>"
+    key: "<YOUR_INSTRUMENTATION_KEY_HERE>"
 }));
 ```
 
@@ -57,7 +65,7 @@ appInsights.setup("<YOUR_INSTRUMENTATION_KEY_HERE>").start();
 
 // Use an existing app insights SDK instance
 winston.add(new AzureApplicationInsightsLogger({
-	insights: appInsights
+    insights: appInsights
 }));
 ```
 
@@ -71,7 +79,7 @@ appInsights.setup("<YOUR_INSTRUMENTATION_KEY_HERE>").start();
 
 // Create a new app insights client with another key
 winston.add(new AzureApplicationInsightsLogger({
-	client: appInsights.getClient("<ANOTHER_INSTRUMENTATION_KEY_HERE>")
+    client: appInsights.getClient("<ANOTHER_INSTRUMENTATION_KEY_HERE>")
 }));
 ```
 
@@ -94,6 +102,25 @@ If you cannot upgrade, read on:
 This may be because your environment has implicitly loaded applicationinsights and called `.setup()`. This happens if you are running an Azure Function App and have `APPINSIGHTS_INSTRUMENTATIONKEY` set.
 The best solution to this is to load `applicationinsights` and pass in `appInsights.defaultClient` using the `client` option as per example 3.
 
+**I'm seeing multiple traces with similar/identical messages**
+
+`applicationinsights` deeply integrates into the `console` transports, and `winston` itself (via `diagnostic-channel`).
+If you are integrating this transport, it's recommended to disable `diagnostic-channel` and console auto collection:
+
+To control `diagnostic-channel`, [follow the guide in the main repository](https://github.com/Microsoft/ApplicationInsights-node.js#automatic-third-party-instrumentation).
+Note that better control is afforded in versions from `1.0.5`.
+
+It is recommended to use _only_ this transport where your application is running in production mode and needs to
+stream data to Application Insights. In all other scenarios such as local debug and test suites, the console transport
+(or similar) should suffice. This is to avoid polluting instances/unnecessary cost.
+
+Despite this notice, to specifically disable console transport collection, use `.setAutoCollectConsole(false)`:
+
+```js
+const appInsights = require('applicationinsights');
+appInsights.setup(process.env.APPINSIGHTS_INSTRUMENTATIONKEY)
+    .setAutoCollectConsole(false);
+```
 
 ## Options
 
@@ -128,7 +155,7 @@ verbose        | verbose (0)
 debug          | verbose (0)
 silly          | verbose (0)
 
-**All other possibile Winston's levels, or custom levels, will default to `info`**
+**All other possible levels, or custom levels, will default to `info`**
 
 [0]: https://azure.microsoft.com/en-us/services/application-insights/
 [1]: https://github.com/flatiron/winston
@@ -160,22 +187,22 @@ const { AzureApplicationInsightsLogger, defaultFormatter } = require('winston-az
 
 winston.add(new AzureApplicationInsightsLogger({
 	// override the formatter to add the app version to the property metadata:
-	formatter: function addAppVersion(traceOrException, userLevel, options) {
-		const props = options.properties || {};
-		// add "myAppVersion" from env:
-		const formattedProps = Object.assign({}, props, {
-			myAppVersion: process.env.MY_APP_VERSION,
-		});
-		// pass back to defaultFormatter:
-		return defaultFormatter(
-			traceOrException,
-			userLevel,
-			{
-				...options,
-				// make changes to properties:
-				properties: formattedProps,
-			}
-		);
-	}
+    formatter: function addAppVersion(traceOrException, userLevel, options) {
+        const props = options.properties || {};
+        // add "myAppVersion" from env:
+        const formattedProps = Object.assign({}, props, {
+            myAppVersion: process.env.MY_APP_VERSION,
+        });
+        // pass back to defaultFormatter:
+        return defaultFormatter(
+            traceOrException,
+            userLevel,
+            {
+                ...options,
+                // make changes to properties:
+                properties: formattedProps,
+            }
+        );
+    }
 }));
 ```
