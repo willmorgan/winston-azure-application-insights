@@ -5,7 +5,7 @@ winston-azure-application-insights
 
 An [Azure Application Insights][0] transport for [Winston][1] logging library. Allows to log on App Insights trace with Winston.
 
-This library intends to be compatible with `applicationinsights` `1.0`. If you are using an older version of the AppInsights NodeJS client, see the `1.1.x` releases.
+This library intends to be compatible with `applicationinsights` `1.0` and Winston `3.x`. If you are using older versions of these libraries, see the `1.1.x` releases.
 
 ## Installation
 
@@ -20,7 +20,7 @@ You'll need the following packages as peer dependencies:
 
 ## Support
 
-Tested on NodeJS 6+
+Tested on NodeJS 8+
 
 ## Usage
 
@@ -37,41 +37,42 @@ The instrumentation key can be supplied in 4 ways:
 * Specifying the "key" property in the options of the transport:
 
 ```javascript
-var aiLogger = require('winston-azure-application-insights').AzureApplicationInsightsLogger;
+const { AzureApplicationInsightsLogger } = require('winston-azure-application-insights');
+
 
 // Create an app insights client with the given key
-winston.add(aiLogger, {
+winston.add(new AzureApplicationInsightsLogger({
 	key: "<YOUR_INSTRUMENTATION_KEY_HERE>"
-});
+}));
 ```
 
 * Passing an initialized Application Insights module reference in the "insights" options property (This may be useful
  if you want to configure AI to suit your needs):
 
 ```javascript
-var appInsights = require("applicationinsights"),
-	aiLogger = require('winston-azure-application-insights').AzureApplicationInsightsLogger;
+const appInsights = require("applicationinsights");
+const { AzureApplicationInsightsLogger } = require('winston-azure-application-insights');
 
 appInsights.setup("<YOUR_INSTRUMENTATION_KEY_HERE>").start();
 
 // Use an existing app insights SDK instance
-winston.add(aiLogger, {
+winston.add(new AzureApplicationInsightsLogger({
 	insights: appInsights
-});
+}));
 ```
 
 * Passing an initialized Application Insights client in the "client" options property:
 
 ```javascript
-var appInsights = require("applicationinsights"),
-	aiLogger = require('winston-azure-application-insights').AzureApplicationInsightsLogger;
+const appInsights = require("applicationinsights");
+const { AzureApplicationInsightsLogger } = require('winston-azure-application-insights');
 
 appInsights.setup("<YOUR_INSTRUMENTATION_KEY_HERE>").start();
 
 // Create a new app insights client with another key
-winston.add(aiLogger, {
+winston.add(new AzureApplicationInsightsLogger({
 	client: appInsights.getClient("<ANOTHER_INSTRUMENTATION_KEY_HERE>")
-});
+}));
 ```
 
 * Setting the `APPINSIGHTS_INSTRUMENTATIONKEY` environment variable (supported by the Application Insights SDK)
@@ -155,27 +156,26 @@ This is an easy way to add some "global" context to your logging, and follows th
 If you want to enhance the default formatting functionality then the `defaultFormatter` is exposed, too.
 
 ```javascript
-var aiWinstonPackage = require('winston-azure-application-insights');
-var AzureApplicationInsightsLogger = aiWinstonPackage.AzureApplicationInsightsLogger;
-var defaultFormatter = aiWinstonPackage.defaultFormatter;
+const { AzureApplicationInsightsLogger, defaultFormatter } = require('winston-azure-application-insights');
 
-winston.add(AzureApplicationInsightsLogger, {
+winston.add(new AzureApplicationInsightsLogger({
 	// override the formatter to add the app version to the property metadata:
 	formatter: function addAppVersion(traceOrException, userLevel, options) {
-		var props = options.properties || {};
+		const props = options.properties || {};
 		// add "myAppVersion" from env:
-		var formattedProps = Object.assign({}, props, {
+		const formattedProps = Object.assign({}, props, {
 			myAppVersion: process.env.MY_APP_VERSION,
 		});
 		// pass back to defaultFormatter:
 		return defaultFormatter(
 			traceOrException,
 			userLevel,
-			// make changes to properties:
-			Object.assign({}, options, {
+			{
+				...options,
+				// make changes to properties:
 				properties: formattedProps,
-			})
+			}
 		);
 	}
-});
+}));
 ```
