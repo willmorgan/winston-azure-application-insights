@@ -7,4 +7,5 @@ set -e
 echo "Testing with NodeJS $(node --version) / $(npm --version)"
 
 npm install
+npm run lint
 npm test
