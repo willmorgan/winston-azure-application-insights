@@ -97,23 +97,6 @@ describe ('winston-azure-application-insights', function() {
 				assert.equal(aiLogger.level, 'warn');
 			});
 
-			it('should set default silent to false', function() {
-				var aiLogger = new transport.AzureApplicationInsightsLogger({
-					key: 'FAKEKEY'
-				});
-
-				assert.notOk(aiLogger.silent);
-			});
-
-			it('should set silent', function() {
-				var aiLogger = new transport.AzureApplicationInsightsLogger({
-					key: 'FAKEKEY',
-					silent: true
-				});
-
-				assert.ok(aiLogger.silent);
-			});
-
 			it('should declare a Winston logger', function() {
 				new transport.AzureApplicationInsightsLogger({
 					key: 'FAKEKEY'
@@ -137,15 +120,6 @@ describe ('winston-azure-application-insights', function() {
 
 			afterEach(function() {
 				clientMock.restore();
-			});
-
-
-			it('should not log if silent', function() {
-				aiLogger.silent = true;
-
-				expectTrace.never();
-
-				aiLogger.log('info', 'some log text...');
 			});
 
 			it('should log with correct log levels', function() {

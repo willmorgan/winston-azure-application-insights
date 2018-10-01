@@ -97,7 +97,6 @@ The best solution to this is to load `applicationinsights` and pass in `appInsig
 ## Options
 
 * **level**: lowest logging level transport to be logged (default: `info`)
-* **silent**: Boolean flag indicating whether to suppress output (default: `false`)
 * **treatErrorsAsExceptions**: Boolean flag indicating whether to treat errors as exceptions.
 See section below for more details (default: `false`).
 * **formatter**: format and mutate arguments passed to applicationinsights `track*` methods with a signature of `trackMethodName, userLevel, options` (default: `noop`)
