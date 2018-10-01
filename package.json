@@ -6,6 +6,10 @@
   "directories": {
     "test": "test"
   },
+  "files": [
+    "lib/*",
+    "*.js"
+  ],
   "scripts": {
     "lint": "eslint -c .eslintrc.json --ignore-path .eslintignore ./",
     "lint-fix": "eslint -c .eslintrc.json --ignore-path .eslintignore ./ --fix",
