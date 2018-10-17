@@ -125,8 +125,8 @@ appInsights.setup(process.env.APPINSIGHTS_INSTRUMENTATIONKEY)
 ## Options
 
 * **level**: lowest logging level transport to be logged (default: `info`)
-* **treatErrorsAsExceptions**: Boolean flag indicating whether to treat errors as exceptions.
-See section below for more details (default: `false`).
+* **sendErrorsAsExceptions**: Boolean flag indicating whether to also track errors to the AI exceptions table.
+See section below for more details (default: `true`).
 
 **SDK integration options (required):**
 
@@ -160,16 +160,24 @@ silly          | verbose (0)
 [1]: https://github.com/flatiron/winston
 [2]: https://github.com/Microsoft/ApplicationInsights-node.js/tree/1.0.1#migrating-from-versions-prior-to-022
 
-## Treating errors as exceptions
+## Error & Exception Logging: Exceptions vs. Traces
 
-You can set the option `treatErrorsAsExceptions` when configuring the transport to treat errors as app insights exceptions for log levels >= `error` (defaults to `false`).
+The Application Insights "exceptions" table allows you to see more detailed error information including the stack trace.
+Therefore for all log events at severity level error or above, an exception is logged if the library detects that an
+Error object has been passed.
+The log event will still generate a trace with the correct severity level regardless of this setting, but please note
+that any Error object will have its `stack` property omitted when sent to `trackTrace`.
+All other properties are included.
 
-This allows you to see it clearly in the Azure Application Insights instead of having to access trace information manually and set up alerts based on the related metrics.
+This allows you to see clearly Azure Application Insights instead of having to access trace information manually and set
+up alerts based on the related metrics.
 
-How it works:
+How it works with `sendErrorsAsExceptions: true`:
 
-* `winstonLogger.log('error', 'error message');` will trigger an app insights `trackException` with `Error('error message')` as argument
+* `logger.error('error message');` creates a trace with severity level 3; *no* exception is tracked
+* `logger.error(new Error('error message'));` creates a trace with severity level 3, *and* an exception with the Error object as argument
+* `logger.error('error message', new Error('error message'));` creates a trace with severity level 3, *and* an exception with the Error object as argument
+* `logger.error(new Error('error message'), logContext);` creates a trace and exception and logContext is set to the customDimensions (properties) track* field
+* `logger.info(new Error('error message'));` creates a trace with severity level 1; *no* exception is tracked
 
-* `winstonLogger.log('error', new Error('error message'));` will trigger an app insights `trackException` with the Error object as argument
-
-* `winstonLogger.log('error', 'error message', new Error('error message'));` will trigger an app insights `trackException` with the Error object as argument
+If you do not wish to track exceptions, you can set the option `sendErrorsAsExceptions: false` when configuring the transport.

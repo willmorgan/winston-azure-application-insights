@@ -137,7 +137,10 @@ describe('winston-azure-application-insights', () => {
             let clientMock;
 
             beforeEach(() => {
-                aiTransport = new transport.AzureApplicationInsightsLogger({ key: 'FAKEKEY', treatErrorsAsExceptions: true });
+                aiTransport = new transport.AzureApplicationInsightsLogger({
+                    key: 'FAKEKEY',
+                    sendErrorsAsExceptions: true,
+                });
                 logger = winston.createLogger({
                     levels: winston.config.syslog.levels,
                     transports: [aiTransport],
@@ -150,7 +153,7 @@ describe('winston-azure-application-insights', () => {
             });
 
             it('should not track exceptions if the option is off', () => {
-                aiTransport.treatErrorsAsExceptions = false;
+                aiTransport.sendErrorsAsExceptions = false;
                 clientMock.expects('trackException').never();
                 logger.error('error message');
             });
@@ -163,14 +166,12 @@ describe('winston-azure-application-insights', () => {
                 clientMock.verify();
             });
 
-            it('should track exceptions if level >= error and msg is a string', () => {
+            it('should not track exceptions if level >= error and msg is a string', () => {
                 ['emerg', 'alert', 'crit', 'error']
                     .forEach((level) => {
-                        const exceptionMock = clientMock.expects('trackException').once();
-                        clientMock.expects('trackTrace').never();
+                        const exceptionMock = clientMock.expects('trackException').never();
                         logger.log({ level, message: 'log level custom error msg' });
                         exceptionMock.verify();
-                        assert.equal(exceptionMock.args[0][0].exception.message, 'log level custom error msg');
                     });
                 clientMock.verify();
             });
@@ -179,21 +180,48 @@ describe('winston-azure-application-insights', () => {
                 const error = new Error('error msg');
                 const expectedCall = clientMock.expects('trackException');
 
-                expectedCall.once();
+                expectedCall.once().withArgs({
+                    exception: error,
+                    properties: {},
+                });
                 logger.error(error);
                 clientMock.verify();
-                assert.equal(expectedCall.args[0][0].exception.message, error.message);
-                assert.equal(expectedCall.args[0][0].properties.stack, error.stack);
             });
 
             it('should track exceptions if level == error and meta is an Error obj', () => {
                 const error = new Error('Error message');
                 const expectedCall = clientMock.expects('trackException');
-
-                expectedCall.once();
+                expectedCall.once().withArgs({
+                    exception: error,
+                    properties: {
+                        message: 'Log handling message',
+                    },
+                });
                 logger.error('Log handling message', error);
                 clientMock.verify();
-                assert.equal(expectedCall.args[0][0].properties.message, 'Log handling message: Error message');
+            });
+
+            it('should track exceptions if level == error, msg is Error and logMeta is context obj', () => {
+                const logContext = {
+                    propBag: true,
+                };
+                const error = new Error('Error message');
+                clientMock.expects('trackException').once().withArgs({
+                    exception: error,
+                    properties: {
+                        propBag: true,
+                    },
+                });
+                clientMock.expects('trackTrace').once().withArgs({
+                    message: error.toString(),
+                    severity: 3,
+                    properties: {
+                        message: error.message,
+                        propBag: true,
+                    },
+                });
+                logger.error(error, logContext);
+                clientMock.verify();
             });
         });
     });
@@ -256,7 +284,6 @@ describe('winston-azure-application-insights', () => {
                     arg2: error.arg2,
                     name: error.name,
                     message: error.message,
-                    stack: error.stack,
                 },
             });
 
@@ -275,7 +302,6 @@ describe('winston-azure-application-insights', () => {
                     name: error.name,
                     arg1: error.arg1,
                     arg2: error.arg2,
-                    stack: error.stack,
                 },
             });
             winstonLogger.error(logMessage, error);
