@@ -11,6 +11,10 @@ Your logging interface can remain familiar to standard (`logger.info`, `logger.e
 
 This library intends to be compatible with `applicationinsights` `1.0` and Winston `3.x`. If you are using older versions of these libraries, see the `1.x` releases.
 
+It works best with `applicationinsights@~1.0.6` due to improved trace property handling.
+
+**[Read the project changelog](./CHANGELOG.md)**  
+
 ## Installation
 
 You'll need the following packages as peer dependencies; install and update them in your requiring project:
@@ -95,12 +99,10 @@ Then you didn't specify a suitable instrumentation key. See the section above.
 
 **I get an error "Zones already loaded"**
 
-Quick fix: upgrade to `applicationinsights@1.0.2`
-
-If you cannot upgrade, read on:
-
-This may be because your environment has implicitly loaded applicationinsights and called `.setup()`. This happens if you are running an Azure Function App and have `APPINSIGHTS_INSTRUMENTATIONKEY` set.
-The best solution to this is to load `applicationinsights` and pass in `appInsights.defaultClient` using the `client` option as per example 3.
+This may be because your environment has already (maybe implicitly) loaded applicationinsights and called `.setup()`.
+This happens if you are running an Azure Function App and have `APPINSIGHTS_INSTRUMENTATIONKEY` set.
+The best solution to this is to load `applicationinsights` and pass in `appInsights.defaultClient` using the `client`
+option as per example 3.
 
 **I'm seeing multiple traces with similar/identical messages**
 
