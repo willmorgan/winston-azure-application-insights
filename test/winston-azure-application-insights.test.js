@@ -282,24 +282,6 @@ describe('winston-azure-application-insights', () => {
             winstonLogger.error(message, error);
         });
 
-        it('stringifies nested customDimensions to workaround AI\'s display problem', () => {
-            expectTrace.once();
-            winstonLogger.info('test', {
-                errors: [
-                    new Error('Custom error 123'),
-                ],
-                is: {
-                    very: {
-                        nested: [true],
-                    },
-                },
-            });
-            expectTrace.verify();
-            const traceProps = expectTrace.args[0][0].properties;
-            assert.include(traceProps.errors, 'Custom error 123');
-            assert.equal(traceProps.is, '{ very: { nested: [ true ] } }');
-        });
-
         describe('formatter', () => {
             let formatterSpy;
 

@@ -35,7 +35,7 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "applicationinsights": "^1.0.4",
+    "applicationinsights": "~1.0.6",
     "chai": "^4.1.2",
     "eslint": "^5.6.1",
     "eslint-config-airbnb-base": "^13.1.0",
@@ -45,7 +45,7 @@
     "winston": "^3.1.0"
   },
   "peerDependencies": {
-    "applicationinsights": "^1.0.0",
+    "applicationinsights": "~1.0.6",
     "winston": "^3.1.0"
   },
   "bugs": {
