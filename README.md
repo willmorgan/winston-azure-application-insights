@@ -127,7 +127,6 @@ appInsights.setup(process.env.APPINSIGHTS_INSTRUMENTATIONKEY)
 * **level**: lowest logging level transport to be logged (default: `info`)
 * **treatErrorsAsExceptions**: Boolean flag indicating whether to treat errors as exceptions.
 See section below for more details (default: `false`).
-* **formatter**: format and mutate arguments passed to applicationinsights `track*` methods with a signature of `trackMethodName, userLevel, options` (default: `noop`)
 
 **SDK integration options (required):**
 
@@ -174,35 +173,3 @@ How it works:
 * `winstonLogger.log('error', new Error('error message'));` will trigger an app insights `trackException` with the Error object as argument
 
 * `winstonLogger.log('error', 'error message', new Error('error message'));` will trigger an app insights `trackException` with the Error object as argument
-
-## Formatter
-
-You can specify a `formatter` option to override the objects passed to `trackTrace` or `trackException`.
-This is an easy way to add some "global" context to your logging, and follows the `formatter` pattern used in other Winston transports.
-
-If you want to enhance the default formatting functionality then the `defaultFormatter` is exposed, too.
-
-```javascript
-const { AzureApplicationInsightsLogger, defaultFormatter } = require('winston-azure-application-insights');
-
-winston.add(new AzureApplicationInsightsLogger({
-	// override the formatter to add the app version to the property metadata:
-    formatter: function addAppVersion(traceOrException, userLevel, options) {
-        const props = options.properties || {};
-        // add "myAppVersion" from env:
-        const formattedProps = Object.assign({}, props, {
-            myAppVersion: process.env.MY_APP_VERSION,
-        });
-        // pass back to defaultFormatter:
-        return defaultFormatter(
-            traceOrException,
-            userLevel,
-            {
-                ...options,
-                // make changes to properties:
-                properties: formattedProps,
-            }
-        );
-    }
-}));
-```

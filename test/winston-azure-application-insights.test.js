@@ -281,69 +281,9 @@ describe('winston-azure-application-insights', () => {
 
             winstonLogger.error(message, error);
         });
-
-        describe('formatter', () => {
-            let formatterSpy;
-
-            function testFormatter(methodName, ownLevel, options) {
-                return Object.assign({}, options, {
-                    _wasFormatted: true,
-                });
-            }
-
-            beforeEach(() => {
-                const freshClient = new appInsights.TelemetryClient('FAKEKEY');
-                formatterSpy = sinon.spy(testFormatter);
-                winstonLogger = winston.createLogger({
-                    transports: [
-                        new transport.AzureApplicationInsightsLogger({
-                            client: freshClient,
-                            formatter: formatterSpy,
-                            treatErrorsAsExceptions: true,
-                        }),
-                    ],
-                });
-                clientMock = sinon.mock(freshClient);
-            });
-
-            afterEach(() => {
-                clientMock.restore();
-            });
-
-            it('passes log traces through a formatter', () => {
-                const logMessage = 'some log text...';
-                const logLevel = 'info';
-                expectTrace = clientMock.expects('trackTrace');
-
-                winstonLogger.log(logLevel, logMessage);
-                assert.isTrue(formatterSpy.called);
-                expectTrace.once().calledWithExactly(formatterSpy.firstCall.returnValue);
-                const formatterArgs = formatterSpy.firstCall.args;
-                assert.equal(formatterArgs[0], 'trackTrace');
-                assert.equal(formatterArgs[1], logLevel);
-                expectTrace.verify();
-            });
-
-            it('passes log exceptions through a formatter', () => {
-                const logMessage = 'some log text...';
-                const logLevel = 'error';
-                const expectException = clientMock.expects('trackException');
-
-                winstonLogger.log(logLevel, logMessage);
-                assert.isTrue(formatterSpy.called);
-                expectException.once().calledWithExactly(formatterSpy.firstCall.returnValue);
-                const formatterArgs = formatterSpy.firstCall.args;
-                assert.equal(formatterArgs[0], 'trackException');
-                assert.equal(formatterArgs[1], logLevel);
-                expectException.verify();
-            });
-        });
     });
 
     describe('exports', () => {
-        it('exposes defaultFormatter', () => {
-            assert.isFunction(transport.defaultFormatter);
-        });
         it('exposes getMessageLevel', () => {
             assert.isFunction(transport.getMessageLevel);
         });
