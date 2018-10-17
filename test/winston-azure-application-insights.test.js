@@ -3,7 +3,7 @@
 
 const { assert } = require('chai');
 const sinon = require('sinon');
-const winston = require('winston');
+const { createLogger, format, config } = require('winston');
 const appInsights = require('applicationinsights');
 const transport = require('../lib/winston-azure-application-insights');
 
@@ -107,7 +107,7 @@ describe('winston-azure-application-insights', () => {
 
             beforeEach(() => {
                 aiTransport = new transport.AzureApplicationInsightsLogger({ key: 'FAKEKEY' });
-                logger = winston.createLogger({
+                logger = createLogger({
                     transports: [aiTransport],
                 });
                 clientMock = sinon.mock(appInsights.defaultClient);
@@ -141,8 +141,8 @@ describe('winston-azure-application-insights', () => {
                     key: 'FAKEKEY',
                     sendErrorsAsExceptions: true,
                 });
-                logger = winston.createLogger({
-                    levels: winston.config.syslog.levels,
+                logger = createLogger({
+                    levels: config.syslog.levels,
                     transports: [aiTransport],
                 });
                 clientMock = sinon.mock(aiTransport.client);
@@ -224,6 +224,61 @@ describe('winston-azure-application-insights', () => {
                 clientMock.verify();
             });
         });
+
+        describe('#formatter properties', () => {
+            let logger;
+            let aiTransport;
+            let clientMock;
+            const TEST_EXTRA_INFO = {
+                my_app_version: '1.0.0-testsuite',
+            };
+            const addTestAppVersions = format((info) => {
+                return Object.assign(info, TEST_EXTRA_INFO);
+            });
+
+            beforeEach(() => {
+                aiTransport = new transport.AzureApplicationInsightsLogger({
+                    key: 'FAKEKEY',
+                });
+                logger = createLogger({
+                    transports: [aiTransport],
+                    format: format.combine(addTestAppVersions(), format.json()),
+                });
+                clientMock = sinon.mock(aiTransport.client);
+            });
+
+            afterEach(() => {
+                clientMock.restore();
+            });
+
+            it('appends my_app_version to the trace properties', () => {
+                clientMock.expects('trackTrace').once().withArgs({
+                    message: 'Test message',
+                    severity: 1,
+                    properties: TEST_EXTRA_INFO,
+                });
+                logger.info('Test message');
+            });
+
+            it('appends my_app_version to existing logMeta', () => {
+                clientMock.expects('trackTrace').once().withArgs({
+                    message: 'Test message',
+                    severity: 1,
+                    properties: Object.assign(TEST_EXTRA_INFO, { propBag: true }),
+                });
+                logger.info('Test message', { propBag: true });
+            });
+
+            it('appends my_app_version to extracted error properties', () => {
+                const error = new Error('Test error');
+                clientMock.expects('trackTrace').once().withArgs({
+                    message: error.message,
+                    severity: 3,
+                    properties: Object.assign(TEST_EXTRA_INFO, { message: error.message }),
+                });
+                logger.error('Test message', error);
+            });
+        });
     });
 
     describe('winston', () => {
@@ -242,7 +297,7 @@ describe('winston-azure-application-insights', () => {
 
         beforeEach(() => {
             const freshClient = new appInsights.TelemetryClient('FAKEKEY');
-            winstonLogger = winston.createLogger({
+            winstonLogger = createLogger({
                 transports: [new transport.AzureApplicationInsightsLogger({ client: freshClient })],
             });
             clientMock = sinon.mock(freshClient);
