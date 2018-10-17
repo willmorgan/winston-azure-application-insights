@@ -225,7 +225,7 @@ describe('winston-azure-application-insights', () => {
             clientMock.restore();
         });
 
-        it('should log from winston', () => {
+        it('converts .log(level, string, object) to a trackTrace', () => {
             const logMessage = 'some log text...';
             const logLevel = 'error';
             const logMeta = {
@@ -244,7 +244,7 @@ describe('winston-azure-application-insights', () => {
             assert.deepEqual(traceArg.properties, logMeta);
         });
 
-        it('should log errors with all fields', () => {
+        it('converts .error(Error) to a useful trace', () => {
             const error = new ExtendedError('errormessage', 'arg1', 'arg2');
 
             expectTrace.once().withArgs({
@@ -263,23 +263,22 @@ describe('winston-azure-application-insights', () => {
             winstonLogger.error(error);
         });
 
-        it('should log errors with all fields and message', () => {
-            const message = 'Descriptive message';
-            const error = new ExtendedError('errormessage', 'arg1', 'arg2');
+        it('converts .error(string, Error) to a useful trace', () => {
+            const logMessage = 'Encountered an exception here';
+            const error = new ExtendedError('Detailed error', 'problem', 'here');
 
             expectTrace.once().withArgs({
-                message: message,
+                message: logMessage,
                 severity: 3,
                 properties: {
-                    arg1: error.arg1,
-                    arg2: error.arg2,
                     message: error.message,
                     name: error.name,
+                    arg1: error.arg1,
+                    arg2: error.arg2,
                     stack: error.stack,
                 },
             });
-
-            winstonLogger.error(message, error);
+            winstonLogger.error(logMessage, error);
         });
     });
 
