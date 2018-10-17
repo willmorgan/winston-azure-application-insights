@@ -1,12 +1,18 @@
 {
   "name": "winston-azure-application-insights",
-  "version": "1.5.0",
+  "version": "2.0.0",
   "description": "Azure Application Insights transport for Winston",
   "main": "./lib/winston-azure-application-insights.js",
   "directories": {
     "test": "test"
   },
+  "files": [
+    "lib/*",
+    "*.js"
+  ],
   "scripts": {
+    "lint": "eslint -c .eslintrc.json --ignore-path .eslintignore ./",
+    "lint-fix": "eslint -c .eslintrc.json --ignore-path .eslintignore ./ --fix",
     "test": "mocha --exit"
   },
   "repository": {
@@ -29,18 +35,24 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "applicationinsights": "^1.0.4",
+    "applicationinsights": "~1.0.6",
     "chai": "^4.1.2",
+    "eslint": "^5.6.1",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.14.0",
     "mocha": "^5.0.1",
     "sinon": "^4.4.2",
-    "winston": "^2.3.0"
+    "winston": "^3.1.0"
   },
   "peerDependencies": {
-    "applicationinsights": "^1.0.0",
-    "winston": "^2.3.0"
+    "applicationinsights": "~1.0.6",
+    "winston": "^3.1.0"
   },
   "bugs": {
     "url": "https://github.com/willmorgan/winston-azure-application-insights/issues"
   },
-  "homepage": "https://github.com/willmorgan/winston-azure-application-insights#readme"
+  "homepage": "https://github.com/willmorgan/winston-azure-application-insights#readme",
+  "dependencies": {
+    "winston-transport": "^4.2.0"
+  }
 }
