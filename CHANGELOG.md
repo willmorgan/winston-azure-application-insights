@@ -7,3 +7,7 @@
 * Remove `formatter` in favour of using `winston@3.x`'s formatter functionality
 * Replace `treatErrorsAsExceptions` with `sendErrorsAsExceptions` following feedback from AI core team w/r best practice error tracking
 * Package install size drastically reduced
+
+# 2.0.1
+
+* Testing
