@@ -129,6 +129,36 @@ describe('winston-azure-application-insights', () => {
                 ['error', 'warn', 'info', 'verbose', 'debug', 'silly']
                     .forEach((level) => logger.log(level, level));
             });
+
+            it('should handle null/undefined messages', () => {
+                clientMock.expects('trackTrace').once().withArgs({ message: 'null', severity: 0, properties: {} });
+                clientMock.expects('trackTrace').once().withArgs({ message: 'undefined', severity: 0, properties: {} });
+
+                [null, undefined]
+                    .forEach((message) => logger.log('debug', message));
+            });
+
+            it('should call toString of message if an object', () => {
+                class CustomObject {
+                    constructor(value) {
+                        this.value = value;
+                    }
+
+                    toString() {
+                        return 'Custom toString - ' + this.value;
+                    }
+                }
+
+                const customObj = new CustomObject('value');
+                const date = new Date(2021, 1, 1);
+
+
+                clientMock.expects('trackTrace').once().withArgs({ message: customObj.toString(), severity: 0, properties: {} });
+                clientMock.expects('trackTrace').once().withArgs({ message: date.toString(), severity: 0, properties: {} });
+
+                [customObj, date]
+                    .forEach((message) => logger.log('debug', message));
+            });
         });
 
         describe('#log errors as exceptions', () => {
