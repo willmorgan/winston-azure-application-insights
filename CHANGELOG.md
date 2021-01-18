@@ -8,6 +8,11 @@
 * Replace `treatErrorsAsExceptions` with `sendErrorsAsExceptions` following feedback from AI core team w/r best practice error tracking
 * Package install size drastically reduced
 
-# 2.0.1
+# 3.0.0
 
+## Breaking Changes
+
+* **v3.0.0 now requires Node.js v8.17.0 or newer.**
+
+## Enhancements
 * Allow `log` to take `null` or `undefined` message parameters.
