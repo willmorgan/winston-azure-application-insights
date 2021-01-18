@@ -8,7 +8,7 @@
 * Replace `treatErrorsAsExceptions` with `sendErrorsAsExceptions` following feedback from AI core team w/r best practice error tracking
 * Package install size drastically reduced
 
-# 3.0.0
+# 3.0.0-alpha
 
 ## Breaking Changes
 
